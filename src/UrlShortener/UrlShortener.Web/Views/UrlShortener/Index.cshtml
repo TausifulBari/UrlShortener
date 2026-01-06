@@ -3,6 +3,47 @@
     ViewData["Title"] = "UrlShortener";
 }
 
+@section Styles
+{
+    <style>
+        .url-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: #fff;
+            border: 1px solid #ccc;
+            padding: 6px 10px;
+            border-radius: 4px;
+            white-space: nowrap;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .15);
+            visibility: hidden; /* Initially hidden */
+            opacity: 0; /* Initially transparent */
+            transition: opacity 0.4s ease, visibility 0.4s ease; /* Smooth transition */
+        }
+
+        .url-wrapper:hover .tooltip {
+            visibility: visible; /* Make it visible on hover */
+            opacity: 1; /* Make it opaque */
+        }
+
+        .tooltip a {
+            color: #007bff; /* Style for the link */
+            text-decoration: none;
+        }
+
+        .tooltip a:hover {
+            text-decoration: underline; /* Optional: underline on hover */
+        }
+
+    </style>
+}
+
 <form asp-controller="UrlShortener" asp-action="Generate" method="post" asp-antiforgery="true">
     <label>Input a Url</label>
     <input type="url" asp-for="LongUrl" />
@@ -12,25 +53,67 @@
 
 <br />
 <br />
-<label>Tiny Url</label>
-<input type="url" asp-for="ShortUrl" />
-
-<button onclick="RedirectUrl()">Redirect</button>
+<div class="url-wrapper">
+    <label>Tiny Url</label>
+    <input type="url" asp-for="ShortUrl" />
+    <div class="tooltip" id="urlTooltip">
+        <a id="tooltipLink" href="" target="_blank" rel="noopener noreferrer"></a>
+    </div>
+    <button onclick="copyUrl()">Copy</button>
+</div>
 
 @section Scripts
 {
     <script>
-        function RedirectUrl() {
-          const url = document.getElementById("ShortUrl").value;
+        document.addEventListener("DOMContentLoaded", function () {
 
-          if (!url) {
-            alert("URL is empty");
-            return;
-          }
+            const input = document.getElementById("ShortUrl");
+            const tooltipLink = document.getElementById("tooltipLink");
+            const tooltip = document.getElementById("urlTooltip");
 
-          // Open in a new tab
-          window.open(url, "_blank");
-        }
+            if (!input || !tooltipLink) return;
+
+            // When the user hovers over the input field
+            input.addEventListener("mouseenter", () => {
+                if (!input.value) return;
+
+                tooltipLink.href = input.value;
+                tooltipLink.textContent = input.value;
+
+                // cancel pending hide
+                clearTimeout(hideTimeout);
+
+                // Make the tooltip visible when hovering over the input
+                tooltip.style.visibility = 'visible';
+                tooltip.style.opacity = '1';
+            });
+
+            // When mouse leaves the input, hide the tooltip
+            input.addEventListener("mouseleave", () => {
+              hideTimeout = setTimeout(() => {
+                tooltip.style.opacity = "0";
+                tooltip.style.visibility = "hidden";
+              }, 3000); // 3 seconds
+            });
+
+            // Ensuring that the URL in the tooltip can be clicked
+            tooltipLink.addEventListener("click", function (event) {
+                // Open the link in a new tab
+                window.open(tooltipLink.href, '_blank');  
+            });
+
+            window.copyUrl = function () {
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(input.value);
+                } else {
+                    input.select();
+                    document.execCommand("copy");
+                }
+            };
+
+        });
+
+
     </script>
 
 }

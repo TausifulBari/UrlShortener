@@ -26,27 +26,30 @@ namespace UrlShortener.Web.Controllers
         [HttpPost, ValidateAntiForgeryToken]
         public IActionResult Generate(UrlViewModel model)
         {
-            var getUrl = GetUrl(model.LongUrl!);
-
-            if (getUrl == null)
+            if(IsValidUrl(model.LongUrl))
             {
-                getUrl = new Entities.UrlShortener
+                var getUrl = GetUrl(model.LongUrl!);
+
+                if (getUrl == null)
                 {
-                    Id = new Guid(),
-                    LongUrl = model.LongUrl!,
-                    ShortUrl = GenerateUrl(),
-                    Code = generatedCode,
-                    CreatedTime = DateTime.Now
-                };
+                    getUrl = new Entities.UrlShortener
+                    {
+                        Id = new Guid(),
+                        LongUrl = model.LongUrl!,
+                        ShortUrl = GenerateUrl(),
+                        Code = generatedCode,
+                        CreatedTime = DateTime.Now
+                    };
 
-                _context.UrlShorteners.Add(getUrl);
-                _context.SaveChanges();
+                    _context.UrlShorteners.Add(getUrl);
+                    _context.SaveChanges();
+                }
+
+                model.Id = getUrl.Id;
+                model.LongUrl = getUrl.LongUrl;
+                model.ShortUrl = getUrl.ShortUrl;
+                model.Code = getUrl.Code;
             }
-
-            model.Id = getUrl.Id;
-            model.LongUrl = getUrl.LongUrl;
-            model.ShortUrl = getUrl.ShortUrl;
-            model.Code = getUrl.Code;
 
             return RedirectToAction("Index", model);
         }
@@ -56,6 +59,14 @@ namespace UrlShortener.Web.Controllers
             return Redirect(url);
         }
 
+        private bool IsValidUrl(string? input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+                return false;
+
+            return Uri.TryCreate(input, UriKind.Absolute, out var uri)
+                   && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
+        }
 
         private Entities.UrlShortener GetUrl(string url) 
         {

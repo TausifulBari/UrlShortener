@@ -8,28 +8,30 @@
     <input type="url" asp-for="LongUrl" />
 
     <button type="submit">Convert</button>
-    <br/>
-    <br/>
-    <label>Tiny Url</label>
-    <input type="url" asp-for="ShortUrl" />
-
-    <button onclick="copyText()">Copy</button>
 </form>
+
+<br />
+<br />
+<label>Tiny Url</label>
+<input type="url" asp-for="ShortUrl" />
+
+<button onclick="RedirectUrl()">Redirect</button>
 
 @section Scripts
 {
     <script>
-        function copyText() {
-          const input = document.getElementById("ShortUrl");
+        function RedirectUrl() {
+          const url = document.getElementById("ShortUrl").value;
 
-          navigator.clipboard.writeText(input.value)
-            .then(() => {
-              console.log("Copied to clipboard!");
-            })
-            .catch(err => {
-              console.error("Failed to copy:", err);
-            });
+          if (!url) {
+            alert("URL is empty");
+            return;
+          }
+
+          // Open in a new tab
+          window.open(url, "_blank");
         }
     </script>
+
 }
 

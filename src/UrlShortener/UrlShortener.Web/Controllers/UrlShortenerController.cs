@@ -82,7 +82,7 @@ namespace UrlShortener.Web.Controllers
                 flag = IsExists(generatedCode);
             }
 
-            return $"{currDomain}/{generatedCode}";
+            return $"https://{currDomain}/{generatedCode}";
         }
 
         private bool IsExists(string code)

@@ -1,0 +1,35 @@
+﻿@model UrlViewModel
+@{
+    ViewData["Title"] = "UrlShortener";
+}
+
+<form asp-controller="UrlShortener" asp-action="Generate" method="post" asp-antiforgery="true">
+    <label>Input a Url</label>
+    <input type="url" asp-for="LongUrl" />
+
+    <button type="submit">Convert</button>
+    <br/>
+    <br/>
+    <label>Tiny Url</label>
+    <input type="url" asp-for="ShortUrl" />
+
+    <button onclick="copyText()">Copy</button>
+</form>
+
+@section Scripts
+{
+    <script>
+        function copyText() {
+          const input = document.getElementById("ShortUrl");
+
+          navigator.clipboard.writeText(input.value)
+            .then(() => {
+              console.log("Copied to clipboard!");
+            })
+            .catch(err => {
+              console.error("Failed to copy:", err);
+            });
+        }
+    </script>
+}
+
